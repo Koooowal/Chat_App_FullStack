@@ -1,11 +1,11 @@
-import Register from "./Components/Register"
+import {UserContextProvider} from "./Context/userContext";
+import Routes from "./Routes/Routes"
 
 function App() {
-
   return (
-    <div> 
-      <Register />
-    </div>
+    <UserContextProvider> 
+      <Routes />
+    </UserContextProvider>
   )
 }
 
