@@ -43,7 +43,8 @@ function Chat() {
     if('online' in message){
       showOnlinePeople(message.online);
     }else if('text' in message){
-      if(message.sender === selectedUserId){
+      // Dodaj warunek sprawdzający, czy ta wiadomość jest dla bieżącego użytkownika
+      if(message.sender === selectedUserId || message.recipient === id){
         setMessages(prev => [...prev, {...message}]);
       } else if(message.sender === id && message.tempId) {
         setMessages(prev => prev.map(m => 

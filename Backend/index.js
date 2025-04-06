@@ -40,7 +40,12 @@ async function authenticateToken(req) {
   });
 }
 
-function showOnlinePeople(onlinePeople){
+function showOnlinePeople(peopleArray = null){
+  const onlinePeople = peopleArray || 
+    [...wss.clients]
+      .filter(client => client.userId)
+      .map(client => ({userId: client.userId, username: client.username}));
+  
   [...wss.clients].forEach(client => {
     client.send(JSON.stringify({
         online: onlinePeople,
@@ -48,7 +53,6 @@ function showOnlinePeople(onlinePeople){
     ));
   });
 }
-
 app.get('/test', (req, res) => {
   res.json('Hello World!');
 });
@@ -130,6 +134,11 @@ const server = app.listen(3000, () => {
 });
 
 const wss = new WebSocketServer({ server });
+
+wss.on('error', (error) => {
+  console.error('WebSocket error:', error);
+});
+
 wss.on('connection', (connection,req) => {
   connection.isAlive = true;
   
@@ -139,12 +148,13 @@ wss.on('connection', (connection,req) => {
       connection.isAlive = false;
       clearInterval(connection.timer);
       connection.terminate();
-      showOnlinePeople();
+      showOnlinePeople(); 
     },1000);
   },5000);
 
   connection.on('pong', () => {
     clearTimeout(connection.death);
+    connection.isAlive = true;
   });
 
   const cookies = req.headers.cookie;
@@ -218,16 +228,11 @@ wss.on('connection', (connection,req) => {
   });
 
   showOnlinePeople();
-});
-
-wss.on('close', (connection) => {
-  [...wss.clients].forEach(client => {
-    client.send(JSON.stringify({
-      online: [...wss.clients].map(c => ({userId:c.userId, username:c.username})),
-    }));
+  
+  connection.on('close', () => {
+    showOnlinePeople();
   });
+  
+  
 });
 
-wss.on('error', (error) => {
-  console.error('WebSocket error:', error);
-});
