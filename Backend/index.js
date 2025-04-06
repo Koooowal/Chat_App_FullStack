@@ -12,7 +12,15 @@ import ImageKit from 'imagekit';
 
 dotenv.config();
 const app = express();
-app.use(cors({origin:process.env.CLIENT_URL,credentials:true}));
+
+app.use(cors({
+  origin: process.env.CLIENT_URL, 
+  credentials: true,
+  sameSite: 'none', 
+  secure: true      
+}));
+
+
 app.use(express.json())
 app.use(cookieParser())
 
@@ -69,7 +77,11 @@ app.post('/register', async (req, res) => {
       if (err) {
         return res.status(500).json({ error: 'Error generating token' });
       }
-      res.cookie('token', token, { httpOnly: true });
+      res.cookie('token', token, { 
+        httpOnly: true, 
+        sameSite: 'none',  
+        secure: true       
+      });
       res.status(201).json({ message: 'User registered successfully' });
     });
   } catch (error) {
@@ -85,7 +97,11 @@ app.post('/login', async (req, res) => {
     if (isPasswordCorrect) {
       jwt.sign({ userId:foundUser._id, username }, process.env.JWT_SECRET, {}, (err, token) => {
         if (err) return res.status(500).json({ error: 'Error generating token' });
-        res.cookie('token', token, { httpOnly: true });
+        res.cookie('token', token, { 
+          httpOnly: true, 
+          sameSite: 'none',  
+          secure: true       
+        });
         res.json(foundUser);
       });
     } else {
